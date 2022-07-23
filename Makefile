@@ -51,9 +51,6 @@ slow-query:
 ssh-mysql:
 	mysql -uisucon -pisucon isuports
 
-init-admin-data:
-	./sql/init-admin.sh
-
 # TODO: 修正必要
 #recreate-sql-init-data:
 #	mysqldump -uisucon -pisucon -t isuports > ./sql/1_InitData.sql
