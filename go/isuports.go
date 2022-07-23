@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gofrs/flock"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -26,7 +27,6 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-    "github.com/google/uuid"
 )
 
 const (
@@ -100,7 +100,7 @@ func createTenantDB(id int64) error {
 
 // システム全体で一意なIDを生成する
 func dispenseID() (string, error) {
-    uuid, lastErr := uuid.NewRandom()
+	uuid, lastErr := uuid.NewRandom()
 	return uuid.String(), lastErr
 }
 
@@ -557,7 +557,7 @@ func billingReportByCompetition(ctx context.Context, tenantDB dbOrTx, tenantID i
 	if err := adminDB.SelectContext(
 		ctx,
 		&vhs,
-        "SELECT player_id, min_created_at FROM visit_history_summary WHERE tenant_id = ? AND competition_id = ?",
+		"SELECT player_id, min_created_at FROM visit_history_summary WHERE tenant_id = ? AND competition_id = ?",
 		tenantID,
 		comp.ID,
 	); err != nil && err != sql.ErrNoRows {
@@ -784,10 +784,10 @@ func playersAddHandler(c echo.Context) error {
 	}
 	displayNames := params["display_name[]"]
 
-    valueStrings := make([]string, 0, len(displayNames))
-    values := make([]interface{}, 0, len(displayNames)*6)
+	valueStrings := make([]string, 0, len(displayNames))
+	values := make([]interface{}, 0, len(displayNames)*6)
 
-    pds := make([]PlayerDetail, 0, len(displayNames))
+	pds := make([]PlayerDetail, 0, len(displayNames))
 	for _, displayName := range displayNames {
 		id, err := dispenseID()
 		if err != nil {
@@ -796,8 +796,8 @@ func playersAddHandler(c echo.Context) error {
 
 		now := time.Now().Unix()
 
-        valueStrings = append(valueStrings, "(?, ?, ?, ?, ?, ?)")
-        values = append(values, id, v.tenantID, displayName, false, now, now)
+		valueStrings = append(valueStrings, "(?, ?, ?, ?, ?, ?)")
+		values = append(values, id, v.tenantID, displayName, false, now, now)
 
 		pds = append(pds, PlayerDetail{
 			ID:             id,
@@ -806,15 +806,15 @@ func playersAddHandler(c echo.Context) error {
 		})
 	}
 
-    stmt := fmt.Sprintf("INSERT INTO player (id, tenant_id, display_name, is_disqualified, created_at, updated_at)  VALUES %s",
-                   strings.Join(valueStrings, ","))
+	stmt := fmt.Sprintf("INSERT INTO player (id, tenant_id, display_name, is_disqualified, created_at, updated_at)  VALUES %s",
+		strings.Join(valueStrings, ","))
 
-    _, err = tenantDB.ExecContext(ctx, stmt, values...)
+	_, err = tenantDB.ExecContext(ctx, stmt, values...)
 
-    if err != nil {
-        c.Logger().Errorf("failed to insert player: %v", err)
-        return c.NoContent(http.StatusInternalServerError)
-    }
+	if err != nil {
+		c.Logger().Errorf("failed to insert player: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	res := PlayersAddHandlerResult{
 		Players: pds,
@@ -1219,25 +1219,23 @@ func playerHandler(c echo.Context) error {
 		return fmt.Errorf("error flockByTenantID: %w", err)
 	}
 	defer fl.Close()
-	pss := make([]PlayerScoreSummaryRow, 0, len(cs))
+
+	pss := []PlayerScoreSummaryRow{}
+	args := []interface{}{
+		v.tenantID,
+		p.ID,
+	}
 	for _, c := range cs {
-		ps := PlayerScoreSummaryRow{}
-		if err := tenantDB.GetContext(
-			ctx,
-			&ps,
-			// 最後にCSVに登場したスコアを採用する = row_numが一番大きいもの
-			"SELECT * FROM player_score_summary WHERE tenant_id = ? AND competition_id = ? AND player_id = ? LIMIT 1",
-			v.tenantID,
-			c.ID,
-			p.ID,
-		); err != nil {
-			// 行がない = スコアが記録されてない
-			if errors.Is(err, sql.ErrNoRows) {
-				continue
-			}
-			return fmt.Errorf("error Select player_score_summary: tenantID=%d, competitionID=%s, playerID=%s, %w", v.tenantID, c.ID, p.ID, err)
-		}
-		pss = append(pss, ps)
+		args = append(args, c.ID)
+	}
+	if err := tenantDB.SelectContext(
+		ctx,
+		&pss,
+		// 最後にCSVに登場したスコアを採用する = row_numが一番大きいもの
+		"SELECT * FROM player_score_summary WHERE tenant_id = ? AND player_id = ? AND competition_id IN ("+strings.Repeat("?, ", len(cs)-1)+"?)",
+		args...,
+	); err != nil {
+		return fmt.Errorf("error Select player_score_summary: tenantID=%d, playerID=%s, %w", v.tenantID, p.ID, err)
 	}
 
 	psds := make([]PlayerScoreDetail, 0, len(pss))
@@ -1323,7 +1321,7 @@ func competitionRankingHandler(c echo.Context) error {
 
 	if _, err := adminDB.ExecContext(
 		ctx,
-        "INSERT INTO visit_history_summary (tenant_id, competition_id, player_id, min_created_at) VALUES (?, ?, ?, ?)",
+		"INSERT INTO visit_history_summary (tenant_id, competition_id, player_id, min_created_at) VALUES (?, ?, ?, ?)",
 		tenant.ID, competitionID, v.playerID, now,
 	); err != nil {
 		var mysqlErr *mysql.MySQLError
