@@ -56,7 +56,7 @@ class Handlers
     /**
      * テナントDBに接続する
      */
-    private function connectToTenantDB(int $id): Connection
+    private function ConnectToTenantSqliteDB(int $id): Connection
     {
         return DriverManager::getConnection(
             params: [
@@ -474,7 +474,7 @@ class Handlers
                 displayName: $t['display_name'],
             );
 
-            $tenantDB = $this->connectToTenantDB($t['id']);
+            $tenantDB = $this->ConnectToTenantSqliteDB($t['id']);
             $cs = $tenantDB->prepare('SELECT * FROM competition WHERE tenant_id=?')
                 ->executeQuery([$t['id']])
                 ->fetchAllAssociative();
@@ -514,7 +514,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         /** @var list<PlayerDetail> $pds */
         $pds = [];
@@ -550,7 +550,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $params = $request->getParsedBody();
         if (!is_array($params)) {
@@ -596,7 +596,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $playerID = $params['player_id'];
 
@@ -632,7 +632,7 @@ class Handlers
     {
         $v = $this->parseViewer($request);
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $title = $request->getParsedBody()['title'] ?? '';
 
@@ -667,7 +667,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
         $id = $params['competition_id'] ?? '';
         if ($id === '') {
             throw new HttpBadRequestException($request, 'competition_id required');
@@ -698,7 +698,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $competitionID = $params['competition_id'] ?? '';
         if ($competitionID === '') {
@@ -813,7 +813,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $cs = $tenantDB->prepare('SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC')
             ->executeQuery([$v->tenantID])
@@ -852,7 +852,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role player required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $this->authorizePlayer($request, $tenantDB, $v->playerID);
 
@@ -931,7 +931,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role player required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $this->authorizePlayer($request, $tenantDB, $v->playerID);
 
@@ -1049,7 +1049,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role player required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $this->authorizePlayer($request, $tenantDB, $v->playerID);
 
@@ -1072,7 +1072,7 @@ class Handlers
             throw new HttpForbiddenException($request, 'role organizer required');
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $response = $this->competitionsHandler($response, $v, $tenantDB);
 
@@ -1148,7 +1148,7 @@ class Handlers
             ));
         }
 
-        $tenantDB = $this->connectToTenantDB($v->tenantID);
+        $tenantDB = $this->ConnectToTenantSqliteDB($v->tenantID);
 
         $p = $this->retrievePlayer($tenantDB, $v->playerID);
 

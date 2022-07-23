@@ -141,7 +141,7 @@ public class Application {
         return Paths.get(ISUCON_TENANT_DB_DIR).resolve(String.format("%d.db", id)).toString();
     }
 
-    public Connection connectToTenantDB(long id) throws DatabaseException {
+    public Connection ConnectToTenantSqliteDB(long id) throws DatabaseException {
         String tenantDBPath = this.tenantDBPath(id);
         if (!new File(tenantDBPath).exists()) {
             throw new DatabaseException(String.format("failed to open tenant DB: %s", tenantDBPath));
@@ -590,7 +590,7 @@ public class Application {
             tb.setName(t.getName());
             tb.setDisplayName(t.getDisplayName());
 
-            try (Connection tenantDb = this.connectToTenantDB(t.getId()); PreparedStatement ps = tenantDb.prepareStatement("SELECT * FROM competition WHERE tenant_id=?");) {
+            try (Connection tenantDb = this.ConnectToTenantSqliteDB(t.getId()); PreparedStatement ps = tenantDb.prepareStatement("SELECT * FROM competition WHERE tenant_id=?");) {
                 ps.setQueryTimeout(SQLITE_BUSY_TIMEOUT);
                 ps.setLong(1, t.getId());
                 ResultSet rs = ps.executeQuery();
@@ -614,7 +614,7 @@ public class Application {
                 }
                 tenantBillings.add(tb);
             } catch (DatabaseException e) {
-                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to connectToTenantDb: ", e);
+                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to ConnectToTenantSqliteDB: ", e);
             } catch (SQLException e) {
                 throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to Select competition: ", e);
             } catch (BillingReportByCompetitionException e) {
@@ -641,7 +641,7 @@ public class Application {
         Connection tenantDb = null;
         try {
             List<PlayerRow> pls = new ArrayList<>();
-            tenantDb = this.connectToTenantDB(v.getTenantId());
+            tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());
             PreparedStatement ps = tenantDb.prepareStatement("SELECT * FROM player WHERE tenant_id=? ORDER BY created_at DESC");
             ps.setQueryTimeout(SQLITE_BUSY_TIMEOUT);
             ps.setLong(1, v.getTenantId());
@@ -664,7 +664,7 @@ public class Application {
 
             return new SuccessResult(true, new PlayersListHandlerResult(pds));
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (SQLException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error Select player: ", e);
         }
@@ -681,7 +681,7 @@ public class Application {
         }
 
         List<PlayerDetail> pds = new ArrayList<>();
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
             for (String displayName : displayNames) {
                 String id = this.dispenseID();
 
@@ -707,13 +707,13 @@ public class Application {
             }
             return new SuccessResult(true, new PlayersAddHandlerResult(pds));
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (DispenseIdException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error dispenseID: ", e);
         } catch (RetrievePlayerException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error retrievePlayer: ", e);
         } catch (SQLException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDB: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         }
     }
 
@@ -727,7 +727,7 @@ public class Application {
             throw new WebException(HttpStatus.FORBIDDEN, "role organizer required");
         }
 
-        try ( Connection tenantDb = this.connectToTenantDB(v.getTenantId()); PreparedStatement ps = tenantDb.prepareStatement("UPDATE player SET is_disqualified = ?, updated_at = ? WHERE id = ?");) {
+        try ( Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId()); PreparedStatement ps = tenantDb.prepareStatement("UPDATE player SET is_disqualified = ?, updated_at = ? WHERE id = ?");) {
             ps.setQueryTimeout(SQLITE_BUSY_TIMEOUT);
             java.sql.Date now = new java.sql.Date(new Date().getTime());
             ps.setBoolean(1, true);
@@ -742,7 +742,7 @@ public class Application {
 
             return new SuccessResult(true, new PlayerDisqualifiedHandlerResult(new PlayerDetail(p.getId(), p.getDisplayName(), p.getIsDisqualified())));
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (SQLException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("error Update player id=%s: ", playerId), e);
         } catch (RetrievePlayerException e) {
@@ -760,7 +760,7 @@ public class Application {
             throw new WebException(HttpStatus.FORBIDDEN, "role organizer required");
         }
 
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId()); PreparedStatement ps = tenantDb.prepareStatement("INSERT INTO competition (id, tenant_id, title, finished_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)");) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId()); PreparedStatement ps = tenantDb.prepareStatement("INSERT INTO competition (id, tenant_id, title, finished_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)");) {
             java.sql.Date now = new java.sql.Date(new Date().getTime());
             String id = this.dispenseID();
 
@@ -775,7 +775,7 @@ public class Application {
 
             return new SuccessResult(true, new CompetitionsAddHandlerResult(new CompetitionDetail(id, title, false)));
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (DispenseIdException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error dispenseID: ", e);
         } catch (SQLException e) {
@@ -793,7 +793,7 @@ public class Application {
             throw new WebException(HttpStatus.FORBIDDEN, "role organizer required");
         }
 
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
             CompetitionRow cr = this.retrieveCompetition(tenantDb, id);
             if (cr == null) {
                 // 存在しない大会
@@ -809,7 +809,7 @@ public class Application {
             ps.executeUpdate();
             return new SuccessResult(true, null);
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (SQLException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error Update competition: ", e);
         } catch (RetrieveCompetitionException e) {
@@ -829,7 +829,7 @@ public class Application {
 
         // DELETEしたタイミングで参照が来ると空っぽのランキングになるのでロックする
         synchronized (this) {
-            try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+            try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
                 CompetitionRow comp = this.retrieveCompetition(tenantDb, competitionId);
                 if (comp == null) {
                     // 存在しない大会
@@ -907,7 +907,7 @@ public class Application {
 
                 return new SuccessResult(true, new ScoreHandlerResult((long) playerScoreRows.size()));
             } catch (DatabaseException e) {
-                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
             } catch (SQLException e) {
                 throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error tenantdb.player_score: ", e);
             } catch (RetrieveCompetitionException e) {
@@ -936,7 +936,7 @@ public class Application {
 
         Connection tenantDb = null;
         try {
-            tenantDb = this.connectToTenantDB(v.getTenantId());
+            tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());
             PreparedStatement ps = tenantDb.prepareStatement("SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC");
             ps.setQueryTimeout(SQLITE_BUSY_TIMEOUT);
             ps.setLong(1, v.getTenantId());
@@ -961,7 +961,7 @@ public class Application {
 
             return new SuccessResult(true, new BillingHandlerResult(tbrs));
         } catch (DatabaseException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (SQLException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error Select competition: ", e);
         } catch (BillingReportByCompetitionException e) {
@@ -985,7 +985,7 @@ public class Application {
         // player_scoreを読んでいるときに更新が走ると不整合が起こるのでロックを取得する
         synchronized (this) {
 
-            try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+            try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
                 this.authorizePlayer(tenantDb, v.getPlayerId());
 
                 PlayerRow p = this.retrievePlayer(tenantDb, playerId);
@@ -1043,7 +1043,7 @@ public class Application {
 
                 return new SuccessResult(true, new PlayerHandlerResult(new PlayerDetail(p.getId(), p.getDisplayName(), p.getIsDisqualified()), psds));
             } catch (DatabaseException e) {
-                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
             } catch (SQLException e) {
                 throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error tenantdb SQL: ", e);
             } catch (NumberFormatException e) {
@@ -1070,7 +1070,7 @@ public class Application {
 
         // player_scoreを読んでいるときに更新が走ると不整合が起こるのでロックを取得する
         synchronized (this) {
-            try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+            try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
                 this.authorizePlayer(tenantDb, v.getPlayerId());
 
                 // 大会の存在確認
@@ -1181,7 +1181,7 @@ public class Application {
             } catch (DataAccessException e) {
                 throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error admindb SQL: ", e);
             } catch (DatabaseException e) {
-                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+                throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
             } catch (SQLException e) {
                 throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error tenantdb SQL: ", e);
             } catch (RetrievePlayerException e) {
@@ -1204,11 +1204,11 @@ public class Application {
             throw new WebException(HttpStatus.FORBIDDEN, "role player required");
         }
 
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
             this.authorizePlayer(tenantDb, v.getPlayerId());
             return this.competitionsHandler(v, tenantDb);
         } catch (DatabaseException | SQLException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (AuthorizePlayerException e) {
             throw new WebException(e.getHttpStatus(), e);
         }
@@ -1224,10 +1224,10 @@ public class Application {
             throw new WebException(HttpStatus.FORBIDDEN, "role organizer required");
         }
 
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
             return this.competitionsHandler(v, tenantDb);
         } catch (DatabaseException | SQLException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         }
     }
 
@@ -1288,7 +1288,7 @@ public class Application {
             return new SuccessResult(true, new MeHandlerResult(td, null, v.getRole(), true));
         }
 
-        try (Connection tenantDb = this.connectToTenantDB(v.getTenantId());) {
+        try (Connection tenantDb = this.ConnectToTenantSqliteDB(v.getTenantId());) {
             PlayerRow p = this.retrievePlayer(tenantDb, v.getPlayerId());
             if (p == null) {
                 return new SuccessResult(true, new MeHandlerResult(td, null, ROLE_NONE, false));
@@ -1296,7 +1296,7 @@ public class Application {
 
             return new SuccessResult(true, new MeHandlerResult(td, new PlayerDetail(p.getId(), p.getDisplayName(), p.getIsDisqualified()), v.getRole(), true));
         } catch (DatabaseException | SQLException e) {
-            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error connectToTenantDb: ", e);
+            throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error ConnectToTenantSqliteDB: ", e);
         } catch (RetrievePlayerException e) {
             throw new WebException(HttpStatus.INTERNAL_SERVER_ERROR, "error retrievePlayer: ", e);
         }

@@ -58,7 +58,7 @@ function tenantDBPath(id: number): string {
 }
 
 // テナントDBに接続する
-async function connectToTenantDB(id: number): Promise<Database> {
+async function ConnectToTenantSqliteDB(id: number): Promise<Database> {
   const p = tenantDBPath(id)
   let db: Database
   try {
@@ -654,7 +654,7 @@ app.get(
           billing: 0,
         }
 
-        const tenantDB = await connectToTenantDB(tenant.id)
+        const tenantDB = await ConnectToTenantSqliteDB(tenant.id)
         try {
           const competitions = await tenantDB.all<CompetitionRow[]>(
             'SELECT * FROM competition WHERE tenant_id = ?',
@@ -705,7 +705,7 @@ app.get(
       }
 
       const pds: PlayerDetail[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const pls = await tenantDB.all<PlayerRow[]>(
           'SELECT * FROM player WHERE tenant_id = ? ORDER BY created_at DESC',
@@ -751,7 +751,7 @@ app.post(
       }
 
       const pds: PlayerDetail[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const displayNames: string[] = req.body['display_name[]']
 
@@ -825,7 +825,7 @@ app.post(
 
       const now = Math.floor(new Date().getTime() / 1000)
       let pd: PlayerDetail
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         try {
           await tenantDB.run('UPDATE player SET is_disqualified = ?, updated_at = ? WHERE id = ?', true, now, playerId)
@@ -885,7 +885,7 @@ app.post(
       const { title } = req.body
       const now = Math.floor(new Date().getTime() / 1000)
       const id = await dispenseID()
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         await tenantDB.run(
           'INSERT INTO competition (id, tenant_id, title, finished_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
@@ -943,7 +943,7 @@ app.post(
       }
 
       const now = Math.floor(new Date().getTime() / 1000)
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const competition = await retrieveCompetition(tenantDB, competitionId)
         if (!competition) {
@@ -991,7 +991,7 @@ app.post(
       }
 
       const playerScoreRows: PlayerScoreRow[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const competition = await retrieveCompetition(tenantDB, competitionId)
         if (!competition) {
@@ -1126,7 +1126,7 @@ app.get(
       }
 
       const reports: BillingReport[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const competitions = await tenantDB.all<CompetitionRow[]>(
           'SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC',
@@ -1197,7 +1197,7 @@ app.get(
         throw new ErrorWithStatus(403, 'role organizer required')
       }
 
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         await competitionsHandler(req, res, viewer, tenantDB)
       } finally {
@@ -1231,7 +1231,7 @@ app.get(
 
       let pd: PlayerDetail
       const psds: PlayerScoreDetail[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const error = await authorizePlayer(tenantDB, viewer.playerId)
         if (error) {
@@ -1324,7 +1324,7 @@ app.get(
 
       let cd: CompetitionDetail
       const ranks: CompetitionRank[] = []
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const error = await authorizePlayer(tenantDB, viewer.playerId)
         if (error) {
@@ -1442,7 +1442,7 @@ app.get(
         throw new ErrorWithStatus(403, 'role player required')
       }
 
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const error = await authorizePlayer(tenantDB, viewer.playerId)
         if (error) {
@@ -1493,7 +1493,7 @@ app.get(
         })
       }
 
-      const tenantDB = await connectToTenantDB(viewer.tenantId)
+      const tenantDB = await ConnectToTenantSqliteDB(viewer.tenantId)
       try {
         const p = await retrievePlayer(tenantDB, viewer.playerId)
         if (!p) {

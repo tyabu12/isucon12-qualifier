@@ -10,7 +10,7 @@ ISUCON_DB_PASSWORD=${ISUCON_DB_PASSWORD:-isucon}
 ISUCON_DB_NAME=${ISUCON_DB_NAME:-isuports}
 
 # MySQLを初期化
-cat init.sql admin/10_schema.sql admin/90_data.sql | mysql -u"$ISUCON_DB_USER" \
+cat init.sql admin/10_schema.sql admin/90_data.sql tenant/10_schema.sql tenant/90_data.sql | mysql -u"$ISUCON_DB_USER" \
 		-p"$ISUCON_DB_PASSWORD" \
 		--host "$ISUCON_DB_HOST" \
 		--port "$ISUCON_DB_PORT" \
