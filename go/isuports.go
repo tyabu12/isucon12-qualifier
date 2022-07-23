@@ -116,7 +116,7 @@ func SetCacheControlPrivate(next echo.HandlerFunc) echo.HandlerFunc {
 func Run() {
 	e := echo.New()
 	e.Debug = true
-	e.Logger.SetLevel(log.OFF)
+	e.Logger.SetLevel(log.DEBUG)
 
 	var (
 		sqlLogger io.Closer
@@ -127,6 +127,9 @@ func Run() {
 	// 未設定なら出力しない
 	// sqltrace.go を参照
 	sqliteDriverName, sqlLogger, err = initializeSQLLogger()
+	if err != nil {
+		e.Logger.Panicf("error initializeSQLLogger: %s", err)
+	}
 	defer sqlLogger.Close()
 
 	e.Use(middleware.Logger())
@@ -164,23 +167,28 @@ func Run() {
 
 	adminDB, err = ConnectAdminDB()
 	if err != nil {
+		e.Logger.Fatalf("failed to connect db: %v", err)
 		return
 	}
 	adminDB.SetMaxOpenConns(10)
 	defer adminDB.Close()
 	tenantDB, err = ConnectAdminDB()
 	if err != nil {
+		e.Logger.Fatalf("failed to connect db: %v", err)
 		return
 	}
 	tenantDB.SetMaxOpenConns(10)
 	defer tenantDB.Close()
 
 	port := getEnv("SERVER_APP_PORT", "3000")
+	e.Logger.Infof("starting isuports server on : %s ...", port)
 	serverPort := fmt.Sprintf(":%s", port)
+	e.Logger.Fatal(e.Start(serverPort))
 }
 
 // エラー処理関数
 func errorResponseHandler(err error, c echo.Context) {
+	c.Logger().Errorf("error at %s: %s", c.Path(), err.Error())
 	var he *echo.HTTPError
 	if errors.As(err, &he) {
 		c.JSON(he.Code, FailureResult{
@@ -804,6 +812,7 @@ func playersAddHandler(c echo.Context) error {
 	_, err = tenantDB.ExecContext(ctx, stmt, values...)
 
 	if err != nil {
+		c.Logger().Errorf("failed to insert player: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
