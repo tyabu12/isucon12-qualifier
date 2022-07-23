@@ -398,6 +398,7 @@ type CompetitionRow struct {
 	Title      string        `db:"title"`
 	FinishedAt sql.NullInt64 `db:"finished_at"`
 	CreatedAt  int64         `db:"created_at"`
+	CreatedAtDesc  int64         `db:"created_at_desc"`
 	UpdatedAt  int64         `db:"updated_at"`
 }
 
