@@ -2,7 +2,7 @@ USE `isuports`;
 
 DROP TABLE IF EXISTS `tenant`;
 DROP TABLE IF EXISTS `id_generator`;
-DROP TABLE IF EXISTS `visit_history`;
+DROP TABLE IF EXISTS `visit_history_summary`;
 
 CREATE TABLE `tenant` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -21,11 +21,10 @@ CREATE TABLE `id_generator` (
   UNIQUE KEY `stub` (`stub`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
 
-CREATE TABLE `visit_history` (
-  `player_id` VARCHAR(255) NOT NULL,
+CREATE TABLE `visit_history_summary` (
   `tenant_id` BIGINT UNSIGNED NOT NULL,
   `competition_id` VARCHAR(255) NOT NULL,
-  `created_at` BIGINT NOT NULL,
-  `updated_at` BIGINT NOT NULL,
-  INDEX `tenant_id_competition_id_player_id` (`tenant_id`, `competition_id`, `player_id`)
+  `player_id` VARCHAR(255) NOT NULL,
+  `min_created_at` BIGINT NOT NULL,
+  PRIMARY KEY (`tenant_id`, `competition_id`, `player_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
