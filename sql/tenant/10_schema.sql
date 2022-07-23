@@ -8,7 +8,7 @@ CREATE TABLE competition (
   title TEXT NOT NULL,
   finished_at BIGINT NULL,
   created_at BIGINT NOT NULL,
-  created_at_desc BIGINT GENERATED ALWAYS AS (-created_at) STORED NOT NULL,
+  created_at_desc BIGINT AS (-created_at) STORED NOT NULL,
   updated_at BIGINT NOT NULL
 );
 CREATE INDEX `competition_tenant_id_created_at` ON `competition`(`tenant_id`, `created_at`);
