@@ -8,11 +8,9 @@ CREATE TABLE competition (
   title TEXT NOT NULL,
   finished_at BIGINT NULL,
   created_at BIGINT NOT NULL,
-  created_at_desc BIGINT AS (-created_at) STORED NOT NULL,
   updated_at BIGINT NOT NULL
 );
 CREATE INDEX `competition_tenant_id_created_at` ON `competition`(`tenant_id`, `created_at`);
-CREATE INDEX `competition_tenant_id_created_at_desc` ON `competition`(`tenant_id`, `created_at_desc`);
 
 CREATE TABLE player (
   id VARCHAR(255) NOT NULL PRIMARY KEY,

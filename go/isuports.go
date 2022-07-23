@@ -398,7 +398,6 @@ type CompetitionRow struct {
 	Title      string        `db:"title"`
 	FinishedAt sql.NullInt64 `db:"finished_at"`
 	CreatedAt  int64         `db:"created_at"`
-	CreatedAtDesc  int64         `db:"created_at_desc"`
 	UpdatedAt  int64         `db:"updated_at"`
 }
 
@@ -1173,7 +1172,7 @@ func billingHandler(c echo.Context) error {
 	if err := tenantDB.SelectContext(
 		ctx,
 		&cs,
-		"SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at_desc ASC",
+		"SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC",
 		v.tenantID,
 	); err != nil {
 		return fmt.Errorf("error Select competition: %w", err)
@@ -1518,7 +1517,7 @@ func competitionsHandler(c echo.Context, v *Viewer, tenantDB dbOrTx) error {
 	if err := tenantDB.SelectContext(
 		ctx,
 		&cs,
-		"SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at_desc ASC",
+		"SELECT * FROM competition WHERE tenant_id=? ORDER BY created_at DESC",
 		v.tenantID,
 	); err != nil {
 		return fmt.Errorf("error Select competition: %w", err)
