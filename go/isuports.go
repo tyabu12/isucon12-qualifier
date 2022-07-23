@@ -410,6 +410,23 @@ func retrieveCompetition(ctx context.Context, tenantDB dbOrTx, id string) (*Comp
 	return &c, nil
 }
 
+// 大会を複数取得する
+func retrieveCompetitions(ctx context.Context, tenantDB dbOrTx, ids []string) (map[string]*CompetitionRow, error) {
+	args := []interface{}{}
+	for _, id := range ids {
+		args = append(args, id)
+	}
+	var rows []CompetitionRow
+	if err := tenantDB.SelectContext(ctx, &rows, "SELECT * FROM competition WHERE id in ("+strings.Repeat("?, ", len(ids)-1)+"?)", args...); err != nil {
+		return nil, fmt.Errorf("error Select competition: id=%v, %w", ids, err)
+	}
+	m := make(map[string]*CompetitionRow)
+	for _, row := range rows {
+		m[row.ID] = &row
+	}
+	return m, nil
+}
+
 type PlayerScoreRow struct {
 	TenantID      int64  `db:"tenant_id"`
 	ID            string `db:"id"`
@@ -1261,11 +1278,17 @@ func playerHandler(c echo.Context) error {
 	}
 
 	psds := make([]PlayerScoreDetail, 0, len(pss))
+
+	competitionIDs := []string{}
 	for _, ps := range pss {
-		comp, err := retrieveCompetition(ctx, tenantDB, ps.CompetitionID)
-		if err != nil {
-			return fmt.Errorf("error retrieveCompetition: %w", err)
-		}
+		competitionIDs = append(competitionIDs, ps.CompetitionID)
+	}
+	compMap, err := retrieveCompetitions(ctx, tenantDB, competitionIDs)
+	if err != nil {
+		return fmt.Errorf("error retrieveCompetitions: %w", err)
+	}
+	for _, ps := range pss {
+		comp := compMap[ps.CompetitionID]
 		psds = append(psds, PlayerScoreDetail{
 			CompetitionTitle: comp.Title,
 			Score:            ps.Score,
