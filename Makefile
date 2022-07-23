@@ -48,6 +48,9 @@ alp-log:
 slow-query:
 	sudo pt-query-digest /var/log/mysql/mysql-slow.log
 
+ssh-mysql:
+	mysql -uisucon -pisucon isuports
+
 # TODO: 修正必要
 #recreate-sql-init-data:
 	#mysqldump -uisucon -pisucon -t isuports > ./sql/1_InitData.sql
