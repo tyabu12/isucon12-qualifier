@@ -8,16 +8,12 @@ deploy-app1:
 	sudo cp conf/nginx/nginx.conf /etc/nginx/nginx.conf
 	sudo cp conf/nginx/sites-enabled/* /etc/nginx/sites-enabled
 	sudo cp conf/mysql.conf.d/* /etc/mysql/mysql.conf.d/
-	$(MAKE) build
 	$(MAKE) restart-nginx restart-app restart-db
 	$(MAKE) clean-log
 
 deploy-app2: deploy-app1
 
 deploy-app3: deploy-app1
-
-build:
-	make -C ./go
 
 restart: restart-db restart-nginx
 
