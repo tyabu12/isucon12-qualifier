@@ -10,8 +10,7 @@ CREATE TABLE competition (
   created_at BIGINT NOT NULL,
   created_at_desc BIGINT GENERATED ALWAYS AS (-created_at) STORED NOT NULL,
   updated_at BIGINT NOT NULL,
-  INDEX `tenant_id_created_at` (`tenant_id`, `created_at`),
-  INDEX `tenant_id_created_at_desc` (`tenant_id`, `created_at_desc`)
+  INDEX `tenant_id_created_at` (`tenant_id`, `created_at`)
 );
 
 CREATE TABLE player (
