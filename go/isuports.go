@@ -566,7 +566,7 @@ func billingReportByCompetition(ctx context.Context, tenantDB dbOrTx, tenantID i
 	if err := adminDB.SelectContext(
 		ctx,
 		&vhs,
-		"SELECT player_id, min_created_at FROM visit_history_summary WHERE tenant_id = ? AND competition_id = ?",
+        "SELECT player_id, min_created_at FROM visit_history_summary WHERE tenant_id = ? AND competition_id = ?",
 		tenantID,
 		comp.ID,
 	); err != nil && err != sql.ErrNoRows {
@@ -1370,8 +1370,8 @@ func competitionRankingHandler(c echo.Context) error {
 
 	if _, err := adminDB.ExecContext(
 		ctx,
-		"INSERT INTO visit_history_summary (player_id, tenant_id, competition_id, min_created_at) VALUES (?, ?, ?, ?)",
-		v.playerID, tenant.ID, competitionID, now,
+        "INSERT INTO visit_history_summary (tenant_id, competition_id, player_id, min_created_at) VALUES (?, ?, ?, ?)",
+		tenant.ID, competitionID, v.playerID, now,
 	); err != nil {
 		var mysqlErr *mysql.MySQLError
 		if !errors.As(err, &mysqlErr) || mysqlErr.Number != 1062 {
