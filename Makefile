@@ -56,5 +56,5 @@ init-admin-data:
 
 # TODO: 修正必要
 #recreate-sql-init-data:
-	#mysqldump -uisucon -pisucon -t isuports > ./sql/1_InitData.sql
+#	mysqldump -uisucon -pisucon -t isuports > ./sql/1_InitData.sql
 
