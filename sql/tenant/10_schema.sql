@@ -34,4 +34,4 @@ CREATE TABLE player_score (
   updated_at BIGINT NOT NULL,
   INDEX `tenant_id` (`tenant_id`)
 );
-CREATE INDEX `player_score_tenant_id_created_at` ON `competition`(`tenant_id`, `created_at`);
+CREATE INDEX `player_score_tenant_id_created_at` ON `player_score`(`tenant_id`, `created_at`);
