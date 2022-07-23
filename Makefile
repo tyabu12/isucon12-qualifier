@@ -43,7 +43,7 @@ publish-mysql-host:
 	mysql -uisucon -pisucon mysql -e"RENAME USER 'isucon'@'localhost' to 'isucon'@'%';"
 
 alp-log:
-	sudo cat /var/log/nginx/access.log | alp ltsv -r
+	sudo cat /var/log/nginx/access.log | alp ltsv -m "/api/player/player/[0-9-a-z]+,/api/organizer/competition/[0-9a-z]+/score,/api/player/competition/[0-9a-z]+/ranking,/api/organizer/player/[0-9a-z]+/disqualified,/api/organizer/competition/[0-9a-z]+/finish" -r
 
 slow-query:
 	sudo pt-query-digest /var/log/mysql/mysql-slow.log
