@@ -99,7 +99,7 @@ func createTenantDB(id int64) error {
 }
 
 // システム全体で一意なIDを生成する
-func dispenseID(ctx context.Context) (string, error) {
+func dispenseID() (string, error) {
     uuid, lastErr := uuid.NewRandom()
 	return uuid.String(), lastErr
 }
@@ -796,7 +796,7 @@ func playersAddHandler(c echo.Context) error {
 
     pds := make([]PlayerDetail, 0, len(displayNames))
 	for _, displayName := range displayNames {
-		id, err := dispenseID(ctx)
+		id, err := dispenseID()
 		if err != nil {
 			return fmt.Errorf("error dispenseID: %w", err)
 		}
@@ -914,7 +914,7 @@ func competitionsAddHandler(c echo.Context) error {
 	title := c.FormValue("title")
 
 	now := time.Now().Unix()
-	id, err := dispenseID(ctx)
+	id, err := dispenseID()
 	if err != nil {
 		return fmt.Errorf("error dispenseID: %w", err)
 	}
@@ -1084,7 +1084,7 @@ func competitionScoreHandler(c echo.Context) error {
 				fmt.Sprintf("error strconv.ParseUint: scoreStr=%s, %s", scoreStr, err),
 			)
 		}
-		id, err := dispenseID(ctx)
+		id, err := dispenseID()
 		if err != nil {
 			return fmt.Errorf("error dispenseID: %w", err)
 		}
